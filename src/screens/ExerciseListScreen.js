@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, FlatList, StyleSheet } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import { Picker } from '@react-native-picker/picker';
-import axios from 'axios';
+import { Card, Title, Paragraph, TouchableRipple } from 'react-native-paper';
+import { fetchExercises } from '../api/api';
 
 const ExerciseListScreen = ({ navigation }) => {
   const [exercises, setExercises] = useState([]);
@@ -11,18 +12,14 @@ const ExerciseListScreen = ({ navigation }) => {
   const [selectedWorkoutType, setSelectedWorkoutType] = useState('');
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/exercises', {
-      headers: {
-        'x-auth-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjY1NGRjMTZlNDFlZDNkYzA1OTIwMGFiIn0sImlhdCI6MTcxNjk3MzY0NSwiZXhwIjoxNzE3MDYwMDQ1fQ.TjCeCTnOn7qkGdxEI84NHfn05NPeexYn3RRf8hYyFww'
-      }
-    })
-    .then(response => {
-      setExercises(response.data);
-      setFilteredExercises(response.data);
-    })
-    .catch(error => {
-      console.error('Error fetching exercises:', error);
-    });
+    fetchExercises()
+      .then(response => {
+        setExercises(response.data);
+        setFilteredExercises(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching exercises:', error);
+      });
   }, []);
 
   const searchFilterFunction = (text) => {
@@ -86,15 +83,20 @@ const ExerciseListScreen = ({ navigation }) => {
         keyExtractor={(item) => item}
         renderItem={({ item }) => (
           <View>
-            <Text style={styles.heading}>{item}</Text>
+            <Title style={styles.heading}>{item}</Title>
             {filteredExercises[item].map((exercise) => (
-              <TouchableOpacity
+              <TouchableRipple
                 key={exercise._id}
                 style={styles.item}
                 onPress={() => navigation.navigate('ExerciseDetail', { exercise })}
               >
-                <Text style={styles.title}>{exercise.name}</Text>
-              </TouchableOpacity>
+                <Card>
+                  <Card.Content>
+                    <Title>{exercise.name}</Title>
+                    <Paragraph>{exercise.description}</Paragraph>
+                  </Card.Content>
+                </Card>
+              </TouchableRipple>
             ))}
           </View>
         )}
@@ -115,13 +117,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   item: {
-    padding: 15,
     marginVertical: 8,
     marginHorizontal: 16,
-    backgroundColor: '#f9c2ff',
-  },
-  title: {
-    fontSize: 18,
   },
 });
 

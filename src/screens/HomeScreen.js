@@ -6,13 +6,13 @@ const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Workout Tracker</Text>
-      <Button mode="contained" onPress={() => navigation.navigate('Workout')}>
+      <Button mode="contained" onPress={() => navigation.navigate('Workout')} style={styles.button}>
         Go to Workout
       </Button>
-      <Button mode="contained" onPress={() => navigation.navigate('ExerciseList')}>
+      <Button mode="contained" onPress={() => navigation.navigate('ExerciseList')} style={styles.button}>
         Go to Exercise List
       </Button>
-      <Button mode="contained" onPress={() => navigation.navigate('CreateWorkout')}>
+      <Button mode="contained" onPress={() => navigation.navigate('CreateWorkout')} style={styles.button}>
         Create Workout
       </Button>
     </View>
@@ -31,6 +31,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+  },
+  button: {
+    marginTop: 10,
+    width: '80%',
   },
 });
 

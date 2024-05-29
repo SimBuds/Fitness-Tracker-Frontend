@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import axios from 'axios';
+import { View, FlatList, StyleSheet } from 'react-native';
+import { Button, Card, Title, Paragraph, TouchableRipple } from 'react-native-paper';
+import { fetchExercises, createWorkout } from '../api/api';
 
 const CreateWorkoutScreen = ({ navigation }) => {
   const [exercises, setExercises] = useState([]);
   const [selectedExercises, setSelectedExercises] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/exercises', {
-      headers: {
-        'x-auth-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjY1NGRjMTZlNDFlZDNkYzA1OTIwMGFiIn0sImlhdCI6MTcxNjk3MzY0NSwiZXhwIjoxNzE3MDYwMDQ1fQ.TjCeCTnOn7qkGdxEI84NHfn05NPeexYn3RRf8hYyFww'
-      }
-    })
-    .then(response => {
-      setExercises(response.data);
-    })
-    .catch(error => {
-      console.error('Error fetching exercises:', error);
-    });
+    fetchExercises()
+      .then(response => {
+        setExercises(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching exercises:', error);
+      });
   }, []);
 
   const toggleExerciseSelection = (exercise) => {
@@ -32,17 +29,13 @@ const CreateWorkoutScreen = ({ navigation }) => {
   const saveWorkout = () => {
     const workoutData = selectedExercises.map((exercise) => ({
       exercise: exercise._id,
-      sets: 3,
+      sets: 3, // You can add input fields to customize sets and reps
       reps: 10,
     }));
 
-    axios.post('http://localhost:5000/api/workouts', {
+    createWorkout({
       exercises: workoutData,
       notes: 'My custom workout',
-    }, {
-      headers: {
-        'x-auth-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjY1NGRjMTZlNDFlZDNkYzA1OTIwMGFiIn0sImlhdCI6MTcxNjk3MzY0NSwiZXhwIjoxNzE3MDYwMDQ1fQ.TjCeCTnOn7qkGdxEI84NHfn05NPeexYn3RRf8hYyFww'
-      }
     })
     .then(response => {
       console.log('Workout created:', response.data);
@@ -60,9 +53,9 @@ const CreateWorkoutScreen = ({ navigation }) => {
         keyExtractor={(item) => item}
         renderItem={({ item }) => (
           <View>
-            <Text style={styles.heading}>{item}</Text>
+            <Title style={styles.heading}>{item}</Title>
             {exercises[item].map((exercise) => (
-              <TouchableOpacity
+              <TouchableRipple
                 key={exercise._id}
                 style={[
                   styles.item,
@@ -70,13 +63,20 @@ const CreateWorkoutScreen = ({ navigation }) => {
                 ]}
                 onPress={() => toggleExerciseSelection(exercise)}
               >
-                <Text style={styles.title}>{exercise.name}</Text>
-              </TouchableOpacity>
+                <Card>
+                  <Card.Content>
+                    <Title>{exercise.name}</Title>
+                    <Paragraph>{exercise.description}</Paragraph>
+                  </Card.Content>
+                </Card>
+              </TouchableRipple>
             ))}
           </View>
         )}
       />
-      <Button title="Save Workout" onPress={saveWorkout} />
+      <Button mode="contained" onPress={saveWorkout} style={styles.button}>
+        Save Workout
+      </Button>
     </View>
   );
 };
@@ -93,16 +93,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   item: {
-    padding: 15,
     marginVertical: 8,
     marginHorizontal: 16,
-    backgroundColor: '#f9c2ff',
   },
   selectedItem: {
     backgroundColor: '#c2f9ff',
   },
-  title: {
-    fontSize: 18,
+  button: {
+    margin: 20,
   },
 });
 
