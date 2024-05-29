@@ -1,18 +1,20 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text, Button } from 'react-native-paper';
 
 const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Workout Tracker</Text>
-      <Button
-        title="Go to Workout"
-        onPress={() => navigation.navigate('Workout')}
-      />
-      <Button
-        title="Go to Exercise List"
-        onPress={() => navigation.navigate('ExerciseList')}
-      />
+      <Button mode="contained" onPress={() => navigation.navigate('Workout')}>
+        Go to Workout
+      </Button>
+      <Button mode="contained" onPress={() => navigation.navigate('ExerciseList')}>
+        Go to Exercise List
+      </Button>
+      <Button mode="contained" onPress={() => navigation.navigate('CreateWorkout')}>
+        Create Workout
+      </Button>
     </View>
   );
 };
@@ -23,11 +25,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+    padding: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginVertical: 20,
+    marginBottom: 20,
   },
 });
 

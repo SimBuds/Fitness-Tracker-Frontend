@@ -1,1 +1,3 @@
-### My Fitness Tracker front end application
+### My Fitness Tracker
+## React Native Front End
+# By Casey Hsu
