@@ -1,106 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
-import { SearchBar } from 'react-native-elements';
-import { Picker } from '@react-native-picker/picker';
-import { Card, Title, Paragraph, TouchableRipple } from 'react-native-paper';
-import { fetchExercises } from '../api/api';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, SectionList, TouchableOpacity } from 'react-native';
+import { getExercises } from '../api/api';
 
 const ExerciseListScreen = ({ navigation }) => {
   const [exercises, setExercises] = useState([]);
-  const [filteredExercises, setFilteredExercises] = useState([]);
-  const [search, setSearch] = useState('');
-  const [selectedWorkoutType, setSelectedWorkoutType] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchExercises()
-      .then(response => {
-        setExercises(response.data);
-        setFilteredExercises(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching exercises:', error);
-      });
+    fetchExercises();
   }, []);
 
-  const searchFilterFunction = (text) => {
-    setSearch(text);
-
-    const newData = Object.keys(exercises).reduce((acc, key) => {
-      const filtered = exercises[key].filter((exercise) =>
-        exercise.name.toLowerCase().includes(text.toLowerCase())
-      );
-      if (filtered.length) {
-        acc[key] = filtered;
-      }
-      return acc;
-    }, {});
-
-    setFilteredExercises(newData);
-  };
-
-  const filterByWorkoutType = (type) => {
-    setSelectedWorkoutType(type);
-
-    if (type === '') {
-      setFilteredExercises(exercises);
-      return;
+  const fetchExercises = async () => {
+    try {
+      const response = await getExercises();
+      const sections = Object.keys(response).map(key => ({
+        title: key,
+        data: response[key]
+      }));
+      setExercises(sections);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching exercises:', error);
+      setLoading(false);
     }
-
-    const newData = Object.keys(exercises).reduce((acc, key) => {
-      if (key === type) {
-        acc[key] = exercises[key];
-      }
-      return acc;
-    }, {});
-
-    setFilteredExercises(newData);
   };
+
+  if (loading) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
     <View style={styles.container}>
-      <SearchBar
-        placeholder="Search Exercises..."
-        lightTheme
-        round
-        value={search}
-        onChangeText={(text) => searchFilterFunction(text)}
-        autoCorrect={false}
-      />
-      <Picker
-        selectedValue={selectedWorkoutType}
-        onValueChange={(itemValue) => filterByWorkoutType(itemValue)}
-      >
-        <Picker.Item label="All" value="" />
-        <Picker.Item label="Chest" value="Chest" />
-        <Picker.Item label="Back" value="Back" />
-        <Picker.Item label="Legs" value="Legs" />
-        <Picker.Item label="Core" value="Core" />
-        <Picker.Item label="Full Body" value="Full Body" />
-        <Picker.Item label="Shoulders" value="Shoulders" />
-      </Picker>
-      <FlatList
-        data={Object.keys(filteredExercises)}
-        keyExtractor={(item) => item}
-        renderItem={({ item }) => (
-          <View>
-            <Title style={styles.heading}>{item}</Title>
-            {filteredExercises[item].map((exercise) => (
-              <TouchableRipple
-                key={exercise._id}
-                style={styles.item}
-                onPress={() => navigation.navigate('ExerciseDetail', { exercise })}
-              >
-                <Card>
-                  <Card.Content>
-                    <Title>{exercise.name}</Title>
-                    <Paragraph>{exercise.description}</Paragraph>
-                  </Card.Content>
-                </Card>
-              </TouchableRipple>
-            ))}
-          </View>
-        )}
-      />
+      {exercises.length > 0 ? (
+        <SectionList
+          sections={exercises}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.exerciseContainer}
+              onPress={() => navigation.navigate('ExerciseDetail', { exerciseId: item._id })}
+            >
+              <Text style={styles.exerciseName}>{item.name}</Text>
+              <Text>{item.workout_type}</Text>
+            </TouchableOpacity>
+          )}
+          renderSectionHeader={({ section: { title } }) => (
+            <Text style={styles.header}>{title}</Text>
+          )}
+        />
+      ) : (
+        <Text>No exercises available.</Text>
+      )}
     </View>
   );
 };
@@ -108,17 +58,23 @@ const ExerciseListScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    padding: 20,
   },
-  heading: {
+  exerciseContainer: {
+    marginBottom: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  header: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginLeft: 10,
-    marginTop: 20,
+    backgroundColor: '#f9f9f9',
+    padding: 10,
   },
-  item: {
-    marginVertical: 8,
-    marginHorizontal: 16,
+  exerciseName: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 

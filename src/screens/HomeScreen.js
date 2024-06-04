@@ -1,8 +1,17 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Button } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = ({ navigation }) => {
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('token');
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Workout Tracker</Text>
@@ -14,6 +23,9 @@ const HomeScreen = ({ navigation }) => {
       </Button>
       <Button mode="contained" onPress={() => navigation.navigate('CreateWorkout')} style={styles.button}>
         Create Workout
+      </Button>
+      <Button mode="contained" onPress={handleLogout} style={styles.button}>
+        Logout
       </Button>
     </View>
   );

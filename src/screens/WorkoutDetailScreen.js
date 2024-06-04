@@ -1,53 +1,56 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { getWorkoutById } from '../api/api';
 
 const WorkoutDetailScreen = ({ route }) => {
-  const { workout } = route.params;
+  const { workoutId } = route.params;
+  const [workout, setWorkout] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchWorkout();
+  }, []);
+
+  const fetchWorkout = async () => {
+    try {
+      const response = await getWorkoutById(workoutId);
+      setWorkout(response);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching workout:', error);
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Workout on {new Date(workout.date).toLocaleDateString()}</Text>
-      {workout.exercises.map((exercise, index) => (
-        <View key={index} style={styles.exerciseContainer}>
-          <Text style={styles.exerciseTitle}>{exercise.exercise.name}</Text>
-          <Text style={styles.exerciseDetail}>{exercise.sets} sets x {exercise.reps} reps</Text>
+    <View style={styles.container}>
+      <Text>Notes: {workout.notes}</Text>
+      <Text>Date: {new Date(workout.date).toLocaleDateString()}</Text>
+      {workout.exercises.map(exercise => (
+        <View key={exercise._id} style={styles.exerciseContainer}>
+          <Text>Exercise: {exercise.name}</Text>
+          <Text>Sets: {exercise.sets}</Text>
+          <Text>Reps: {exercise.reps}</Text>
         </View>
       ))}
-      <Text style={styles.notesTitle}>Notes:</Text>
-      <Text style={styles.notes}>{workout.notes}</Text>
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    padding: 20,
   },
   exerciseContainer: {
-    marginBottom: 15,
-  },
-  exerciseTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  exerciseDetail: {
-    fontSize: 16,
-  },
-  notesTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 20,
-  },
-  notes: {
-    fontSize: 16,
-    fontStyle: 'italic',
+    marginTop: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
 });
 

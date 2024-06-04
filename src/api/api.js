@@ -1,26 +1,20 @@
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Set up the base URL for your API
 const API_BASE_URL = 'http://localhost:5000/api';
 
-const getAuthToken = () => {
-  return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjY1NGRjMTZlNDFlZDNkYzA1OTIwMGFiIn0sImlhdCI6MTcxNjk3MzY0NSwiZXhwIjoxNzE3MDYwMDQ1fQ.TjCeCTnOn7qkGdxEI84NHfn05NPeexYn3RRf8hYyFww';
-};
-
-// Create an Axios instance with common configurations
-const axiosInstance = axios.create({
+const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    'Cache-Control': 'no-store',
   },
 });
 
-// Add a request interceptor to include the token in the headers
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = getAuthToken();
+api.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem('token');
     if (token) {
-      config.headers['x-auth-token'] = token;
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -29,17 +23,108 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Define API functions
-export const fetchExercises = () => {
-  return axiosInstance.get('/exercises');
+// User API
+export const registerUser = async (userData) => {
+  try {
+    const response = await api.post('/users/register', userData);
+    await AsyncStorage.setItem('token', response.data.token);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
-export const fetchWorkouts = () => {
-  return axiosInstance.get('/workouts');
+export const loginUser = async (credentials) => {
+  try {
+    const response = await api.post('/users/login', credentials);
+    await AsyncStorage.setItem('token', response.data.token);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
-export const createWorkout = (workoutData) => {
-  return axiosInstance.post('/workouts', workoutData);
+export const logoutUser = async () => {
+  try {
+    await AsyncStorage.removeItem('token');
+    return api.post('/users/logout');
+  } catch (error) {
+    throw error;
+  }
 };
 
-export default axiosInstance;
+// Exercise API
+export const getExercises = async () => {
+  try {
+    const response = await api.get('/exercises');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getExerciseById = async (id) => {
+  try {
+    const response = await api.get(`/exercises/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const createExercise = async (exerciseData) => {
+  try {
+    const response = await api.post('/exercises', exerciseData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Workout API
+export const getWorkouts = async () => {
+  try {
+    const response = await api.get('/workouts');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const getWorkoutById = async (id) => {
+  try {
+    const response = await api.get(`/workouts/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const createWorkout = async (workoutData) => {
+  try {
+    const response = await api.post('/workouts', workoutData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateWorkout = async (id, workoutData) => {
+  try {
+    const response = await api.put(`/workouts/${id}`, workoutData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteWorkout = async (id) => {
+  try {
+    const response = await api.delete(`/workouts/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export default api;
